@@ -10,7 +10,7 @@ b: git clone directly on the pi
 ### Step 2: Move shit around
 sudo mv nightlight/nightlight.service /opt/
 
-sudo mv -r nightlight/ /opt/
+sudo mv nightlight/ /opt/
 
 ### Step 3: Users, groups and permissions
 Set up www-data user
@@ -26,3 +26,6 @@ sudo systemctl enable nightlight.service
 sudo systemctl daemon-reload
 
 sudo systemctl start nightlight.service
+
+In order to check that the service has started up correctly, the status of the service can be checked using:
+sudo systemctl status nightlight.service
