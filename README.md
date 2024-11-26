@@ -9,11 +9,11 @@ Let's say we decide to use `192.168.1.6` (because it's unused) and that we are c
 
 **Mac:**
 ```shell
-sudo ifconfig en8 alias 192.168.3.6 255.255.255.0
+sudo ifconfig en8 alias 192.168.1.6 255.255.255.0
 ```
 **Linux:**
 ```shell
-sudo ip addr add 192.168.3.6/24 dev en8
+sudo ip addr add 192.168.1.6/24 dev en8
 ```
 for Linux `addr add` can be substituted with `a a` if you want to write it quicker.
 
@@ -22,60 +22,118 @@ for Linux `addr add` can be substituted with `a a` if you want to write it quick
 **NOTE:** If you don't know what network interfaces you have available or want to see what IPs are your computer has on different interfaces, you can check this using `sudo ifconfig` for Mac and 
 `sudo ip addr` or `sudo ip a` for Linux.
 
+To verify that we are able to connect to our Raspberry Pi form our PC we can simply use ping:
+```shell
+ping 192.168.1.2
+```
+If you get an answer an no packets lost you have successfully connected to the Raspberry Pi! 
+
 
 ### Step 1: Copy or clone repo
-There are two ways of getting the NLS on the desired Raspberry Pi 
-#### a: Copy over to Pi using scp
-If you don't want to log into git on the host device, there is an option to clone this repo onto your personal computer before copying it over afterwards.
+There are two ways of getting the NLS on the desired Raspberry Pi: a) clone repo onto your PC and copy it over or b) clone it directly to the Pi.
 
-In order to do this first clone the repo to your computer, either with https or ssh:
+#### A: Copy over to Pi using scp
+If you don't want to log into git on the host device, there is an option to clone this repo onto your personal computer before copying it over afterwards. In order to do this first clone the repo to a fitting place your computer, either with https or ssh:
 
-SSH:
-https:
+**https:**
 ```shell
 git clone https://github.com/OsloMet-OceanLab/nightlight.git
 ```
 
-SSH:
+**SSH:**
 ```shell
 git clone git@github.com:OsloMet-OceanLab/nightlight.git
 ```
 
 The difference is that SSH requires a [public key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account) while HTTPS requires a [github token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens), please consult the github documentation  [github documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) for more on this.
-```shell
-scp 
-```
 
-#### b: git clone directly on the pi
-https:
+After cloning the repo, we can then copy over the files using the [Secure Copy Protocol](https://en.wikipedia.org/wiki/Secure_copy_protocol). Assuming that the host IP is `192.168.1.2` and the username is `pi`, the copy command will be:
+```shell
+scp -r nightlight/ pi@192.168.1.2:
+```
+This will copy the whole nightlight directory into the `/home/pi/` directory on the Raspberry Pi.
+
+#### B: git clone directly on the pi
+To clone the github repo directly onto the computer you must first log inn using ssh. Assuming that the host IP is `192.168.1.2` and the username is `pi`, the copy command will be:
+```shell
+ssh pi@192.168.1.2
+```
+Once you are logged into the Raspberry Pi you are free to choose if you want to clone using https or SSH:
+
+**https:**
 ```shell
 git clone https://github.com/OsloMet-OceanLab/nightlight.git
 ```
 
-SSH:
+**SSH:**
 ```shell
 git clone git@github.com:OsloMet-OceanLab/nightlight.git
 ```
 
 ### Step 2: Move shit around
+For our service to be in a place where we can't delete it by accident we would like to move it to the `/opt/` directory. On the Raspberry Pi we start by moving the `nightlight.service` file first:
+```shell
 sudo mv nightlight/nightlight.service /opt/
-
+```
+then we move the rest of the directory:
+```shell
 sudo mv nightlight/ /opt/
+```
 
 ### Step 3: Users, groups and permissions
-Set up www-data user
+When all files are in their intended places, we have to set up a user to run the service and add it to the `gpio` group so that our service can actually interact with the GPIO pins on the Pi. First check if the user exists:
+```shell
+cat /etc/passwd | grep emuas
+```
+if this yields no printouts, then we have to create the user and add it to correct groups:
+```shell
+sudo useradd -r -s /usr/sbin/nologin emuas
+sudo groupadd emuas
+```
+Add user to gpio:
+```shell
+sudo usermod -aG gpio emuas
+```
+To verify that the user has been created and added to the correct groups simply run:
 
-Add user to gpio
+```shell
+groups emuas
+```
+The printout should then read `emuas : emuas gpio`. With the group in place we can now give it permission to own the `/opt/nightlight/` directory and the files containing it. This is easy using:
+
+```shell
+sudo chown -R emuas:emuas /opt/nightlight/
+```
+Verify ownership by running
+```shell
+sudo ls -l /opt/nightlight/
+```
 
 ### Step 4: Register and start service
-
+Now that our user has been set up with the right permissions it is time to actually start the service. First we have to create a symlink from `/opt/nightlight.service` to `/etc/systemd/system/nightlight.service`, to do this we can run:
+```shell
 sudo systemctl link /opt/nightlight.service
-
+```
+we then have to enable the service to let it run and reload the system daemon:
+```shell
 sudo systemctl enable nightlight.service
-
 sudo systemctl daemon-reload
-
+```
+When this is done we can start our service
+```shell 
 sudo systemctl start nightlight.service
-
+```
 In order to check that the service has started up correctly, the status of the service can be checked using:
+```shell 
 sudo systemctl status nightlight.service
+```
+If you wish to stop the service this can be done using:
+```shell 
+sudo systemctl stop nightlight.service
+```
+or restart the service using:
+```shell 
+sudo systemctl restart nightlight.service
+```
+
+After all this is done the service 

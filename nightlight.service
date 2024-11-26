@@ -2,7 +2,7 @@
 Description=ANERIS EMUAS Night Light Service For Disturbing Fish
 
 [Service]
-User=www-data
+User=emuas
 WorkingDirectory=/opt/nightlight
 ExecStart=/usr/bin/python3 lights.py
 Restart=always
