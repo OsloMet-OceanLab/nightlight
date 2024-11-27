@@ -1,7 +1,15 @@
 # Night Light Service
 Night Light Service (NLS) is a service that only turns on the light for one minute every half an hour on the OBSEA ANERIS EMUAS camera.
 
-## Install
+## Features
+- Lights turning on for one minute every half hour of the night
+- The cycle starts the half hour closest to sunset in Vilanova i la Geltrú
+- Last one minute of light is triggered at the half hour closest to sunrise
+
+## Future work
+- Implement reliable PWM in order to control the brightness of the lights
+
+## Installation
 ### Step 0: Connect device to your computer
 Connect your PC with the Raspberry Pi you intend to use, either by cable or network. Make sure you have an IP on the same interface as the device you intend to work on. Say if your connected to the Pi through ethernet and the Pi's IP is `192.168.1.2`, you can scan the network using `arp` or wireshark and choose an IP on the same subnet that is available. 
 
@@ -135,5 +143,8 @@ or restart the service using:
 ```shell 
 sudo systemctl restart nightlight.service
 ```
+After all this is done the service should be up and running.
 
-After all this is done the service 
+
+## Future work
+Make a version that uses PWM in order to controll the brightness of the light
