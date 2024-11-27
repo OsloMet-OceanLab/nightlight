@@ -144,7 +144,3 @@ or restart the service using:
 sudo systemctl restart nightlight.service
 ```
 After all this is done the service should be up and running.
-
-
-## Future work
-Make a version that uses PWM in order to controll the brightness of the light
