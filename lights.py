@@ -51,7 +51,7 @@ def roundHalfHour(dt: datetime):
 
 def sunset_sunrise() -> tuple[datetime, datetime]:
     """
-    Returns a tuple of sunset and sunrise of Vilanova la Geltrú in CET
+    Returns a tuple of sunset and sunrise of Vilanova i la Geltrú in CET
     """
 
     # Fetch suntime in Vilanova i la Geltrú
@@ -127,7 +127,7 @@ def night(scheduler: BackgroundScheduler, service_killer: ServiceKiller):
 
             repeat -= 1
 
-    # NOTE: The night schedule has consists of two jobs: 
+    # NOTE: The night schedule consists of two jobs: 
     # 1) Called "night" running the actual schedule
     # 2) Called "schedule_night" used to reschedule the night schedule every day at 12:00
     scheduler.add_job(run_night, trigger='cron', hour=start_hour, minute=start_min, id="night", replace_existing=True, max_instances=1)
